@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Notes App</h1>
+
+    <form id="noteForm">
+      <input type="text" id="noteTitle" placeholder="Enter your note..." required />
+      <button type="submit">Add</button>
+    </form>
+
+    <ul id="notesList"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('noteForm');
+    const input = document.getElementById('noteTitle');
+    const list = document.getElementById('notesList');
+
+    // Fetch notes on load
+    fetch('/notes')
+      .then(res => res.json())
+      .then(data => {
+        data.forEach((note, index) => {
+          if (note) addNoteToUI(note.title, index);
+        });
+      });
+
+    // Add new note
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = input.value.trim();
+      if (!title) return;
+
+      fetch('/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+      }).then(() => {
+        addNoteToUI(title, document.querySelectorAll('li').length);
+        input.value = '';
+      });
+    });
+
+    // Add to UI
+    function addNoteToUI(title, index) {
+      const li = document.createElement('li');
+      li.textContent = title;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerHTML = '❌';
+      deleteBtn.className = 'delete';
+      deleteBtn.onclick = () => {
+        fetch(`/notes/${index}`, {
+          method: 'DELETE'
+        }).then(() => location.reload());
+      };
+
+      li.appendChild(deleteBtn);
+      list.appendChild(li);
+    }
+  </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 let notes = [];
-
+app.use(express.static('public'));
 app.use(express.json());
 
 app.get('/', (req, res) => {
